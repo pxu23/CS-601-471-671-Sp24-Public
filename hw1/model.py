@@ -73,7 +73,10 @@ def featurize(sentence: str, embeddings: gensim.models.keyedvectors.KeyedVectors
     # None - if the vector sequence is empty, i.e. the sentence is empty or None of the words in the sentence is in the embedding vocabulary
     # A torch tensor of shape (embed_dim,) - the average word embedding of the sentence
     # Hint: follow the hints in the pdf description
-    raise NotImplementedError
+    if len(vectors) == 0:
+        return None
+    else:
+        return torch.from_numpy(np.mean(vectors, axis=0))
 
 
 def create_tensor_dataset(raw_data: Dict[str, List[Union[int, str]]],
@@ -83,7 +86,10 @@ def create_tensor_dataset(raw_data: Dict[str, List[Union[int, str]]],
 
         # TODO: complete the for loop to featurize each sentence
         # only add the feature and label to the list if the feature is not None
-        raise NotImplementedError
+        feature = featurize(text, embeddings)
+        if feature is not None:
+            all_features.append(feature)
+            all_labels.append(label)
         # your code ends here
 
     # stack all features and labels into two single tensors and create a TensorDataset
@@ -115,7 +121,7 @@ class SentimentClassifier(nn.Module):
 
         # TODO: define the linear layer
         # Hint: follow the hints in the pdf description
-        raise NotImplementedError
+        self.linear = nn.Linear(self.embed_dim, self.num_classes)
         # your code ends here
 
         self.loss = nn.CrossEntropyLoss(reduction='mean')
@@ -123,7 +129,7 @@ class SentimentClassifier(nn.Module):
     def forward(self, inp):
         # TODO: complete the forward function
         # Hint: follow the hints in the pdf description
-        raise NotImplementedError
+        logits = self.linear(inp)
         # your code ends here
 
         return logits
@@ -140,7 +146,8 @@ def accuracy(logits: torch.FloatTensor, labels: torch.LongTensor) -> torch.Float
     # Hint: follow the hints in the pdf description, the return should be a tensor of 0s and 1s with the same shape as labels
     # labels is a tensor of shape (batch_size,)
     # logits is a tensor of shape (batch_size, num_classes)
-    raise NotImplementedError
+    preds = torch.argmax(logits, dim=1)
+    return (preds == labels).float()
 
 
 def evaluate(model: SentimentClassifier, eval_dataloader: DataLoader) -> Tuple[float, float]:
